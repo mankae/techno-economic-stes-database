@@ -1,9 +1,0 @@
-pyproject.toml
-src/stes_project.egg-info/PKG-INFO
-src/stes_project.egg-info/SOURCES.txt
-src/stes_project.egg-info/dependency_links.txt
-src/stes_project.egg-info/requires.txt
-src/stes_project.egg-info/top_level.txt
-src/stes_tools/CostFunctions.py
-src/stes_tools/H2Oprop.py
-src/stes_tools/__init__.py
