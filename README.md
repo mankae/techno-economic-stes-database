@@ -32,22 +32,13 @@ The class and subclasses contain also functions. For more information, see the e
 
 **Example for water property functions:**
 ```python
-# density function
 >>> rho = st.density_water(T=25)
->>> rho
-```
-**Output [kg/m^3]:**
-```text
-997.0680068359376
-```
-```python
-# heat capacity function
 >>> c_p = st.specific_heat_water(T=25)
->>> c_p
+>>> print("The density of water at 25°C is", round(rho), "kg/m^3 and the specific heat capacity", round(c_p), "J/(kg·K).")
 ```
-**Output [J/(kg·K)]:**
+**Output:**
 ```text
-4181.562794921874
+The density of water at 25°C is 997 kg/m^3 and the specific heat capacity 4182 J/(kg·K).
 ```
 **Example cost functions:**
 ```python
