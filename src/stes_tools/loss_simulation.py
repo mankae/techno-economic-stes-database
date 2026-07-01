@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.optimize import minimize
 
-from .import_functions import data_import, PTES_geometry_import
+from .import_functions import data_import
 from .H2O_prop import density_water, specific_heat_water
 
 
