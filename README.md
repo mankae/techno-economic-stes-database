@@ -35,9 +35,9 @@ The class and subclasses contain also functions. For more information, see the e
 import stes_tools as st
 
 # get the density and specific heat capacity of water at 25°C
->>> rho = st.density_water(T=25)
->>> c_p = st.specific_heat_water(T=25)
->>> print("The density of water at 25°C is", round(rho), "kg/m^3 and the specific heat capacity", round(c_p), "J/(kg·K).")
+rho = st.density_water(T=25)
+c_p = st.specific_heat_water(T=25)
+print("The density of water at 25°C is", round(rho), "kg/m^3 and the specific heat capacity", round(c_p), "J/(kg·K).")
 ```
 **Output:**
 ```text
@@ -48,9 +48,9 @@ The density of water at 25°C is 997 kg/m^3 and the specific heat capacity 4182 
 import stes_tools as st
 
 # get the CAPEX and OPEX value of a PTES plant
->>> CAPEX = st.CAPEX_STES(technology='PTES', unit='per_volume', capacity=70000, T_min=45, T_max=85) * 70000
->>> OPEX = CAPEX * st.OPEX_STES('PTES')
->>> print("CAPEX of a PTES with a volume of 70000 m^3 and temperature range from 45°C to 85°C:", round(CAPEX), "CHF, OPEX of the same PTES:", round(OPEX), "CHF/a")
+CAPEX = st.CAPEX_STES(technology='PTES', unit='per_volume', capacity=70000, T_min=45, T_max=85) * 70000
+OPEX = CAPEX * st.OPEX_STES('PTES')
+print("CAPEX of a PTES with a volume of 70000 m^3 and temperature range from 45°C to 85°C:", round(CAPEX), "CHF, OPEX of the same PTES:", round(OPEX), "CHF/a")
 ```
 **Output:**
 ```text
