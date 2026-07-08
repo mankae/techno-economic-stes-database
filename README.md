@@ -31,7 +31,7 @@ The package provides functions to estimate investment and operating costs based 
 
 The package includes a simulation framework for modelling heat losses in PTES and TTES systems.
 
-The simulation derives an effective **self-discharge rate** ($\eta_{\mathrm{self}}$), which can be directly used in the Simple Storage Model (SSM) frequently employed in optimization-based energy system models:
+The simulation derives an effective **self-discharge rate** ($\eta_{\mathrm{self}}$), which can be directly used in the Simple Storage Model (SSM) frequently employed in optimization-based energy system models (ESMs):
 
 $$Q_{\mathrm{sto,t+1}}=\eta_{\mathrm{self}} \cdot Q_{\mathrm{sto,t}}+\left(\eta_{\mathrm{ch}} \cdot \dot{Q}_{\mathrm{ch}} -\frac{\dot{Q}_{\mathrm{disch}}}{\eta_{\mathrm{disch}}}\right) \cdot \Delta t$$
 
@@ -84,23 +84,27 @@ Returns the annual OPEX factor for the selected STES technology.
 
 Imports the operational data required for the heat-loss simulation from an Excel file.
 
-The required Excel format is described in
+The required Excel format is described in [
+notebooks/Heat_Loss_Simulation_of_PTES.ipynb](notebooks/Heat_Loss_Simulation_of_PTES.ipynb)
+
+---
+
+### Temperature map
 
 ```
-src/stes_tools/import_functions.py
+temperature_map(n_layers, T_min, T_mid, T_max, n_points, stretch, sharpness, overlap, plot)
 ```
+
+Generates a stratified temperature distribution depending on the energy content of the storage used during the heat-loss simulation.
+
+The parameters controlling the temperature profile are explained in [
+notebooks/Heat_Loss_Simulation_of_PTES.ipynb](notebooks/Heat_Loss_Simulation_of_PTES.ipynb)
 
 ---
 
 ### Storage classes
 
-The central class is
-
-```
-STES
-```
-
-which provides the common functionality for all storage types.
+The central class is `STES` which provides the common functionality for all storage types.
 
 It is implemented through the following subclasses.
 
@@ -112,7 +116,7 @@ PTES(h,a,b,c,d,n_layers,T_min,T_max,T_ref)
 
 Defines a Pit Thermal Energy Storage (PTES) system by specifying
 
-- geometry
+- geometry (truncated and inverted pyramid)
 - number of temperature layers
 - operating temperature range
 - reference temperature
@@ -125,23 +129,39 @@ Defines a Pit Thermal Energy Storage (PTES) system by specifying
 TTES(h,r,n_layers,T_min,T_max,T_ref)
 ```
 
-Defines a Tank Thermal Energy Storage (TTES) system.
+Defines a Tank Thermal Energy Storage (TTES) system
+
+- geometry (cylinder)
+- number of temperature layers
+- operating temperature range
+- reference temperature
 
 ---
 
-### Temperature map
+### Functions of storage classes
 
-```
-temperature_map(n_layers, T_min, T_mid, T_max, n_points, stretch, sharpness, overlap, plot)
-```
+- `.compute_energy_bounds()`
+- `.set_temperature_map(T_curves)`
+- `.get_temperature_layers(Q_storage)`
+- `.set_U_values(U_lid, U_side, U_bottom)`
 
-Generates a stratified temperature distribution used during the heat-loss simulation.
+### `PTES` specific functions
+- `.volume_truncated_pyramid(h, a, b, c, d)`
+- `.volume_per_layer_truncated_pyramid(h, a, b, c, d, n)`
+- `.surface_area_truncated_pyramid(h, a, b, c, d)`
+- `.surface_area_per_layer_truncated_pyramid(h, a, b, c, d, n)`
+- `.simulate_PTES(file_path, Q_storage_start, sim_start=None, sim_end=None)`
+- `.calculate_U_values_PTES(file_path,Q_storage_start,Q_storage_end,share_loss_lid=0.56,share_loss_side=0.41,share_loss_bottom=0.03,start_idx=None,end_idx=None)`
 
-The parameters controlling the temperature profile are explained in
+### `TTES` specific functions
+- `.volume_cylinder(h, r)`
+- `.volume_per_layer(h, r, n)`
+- `.surface_area_cylinder(h, r)`
+- `.surface_area_per_layer(h, r, n)`
 
-```
-notebooks/Heat_Loss_Simulation_of_PTES.ipynb
-```
+### General functions for heat loss simulation (can be used without defining a specific storage)
+- `.simulate_storage_simple(eta, Q_charge, Q_discharge, Q_storage_start)`
+- `.calculate_self_discharge_yearly(file_path, Q_storage_start_by_year, Q_storage_end_by_year)`
 
 ---
 
@@ -209,11 +229,12 @@ dronninglund_PTES.set_temperature_map(st.temperature_map(n_layers=32, T_min=12, 
 
 data = st.data_import(file_path)
 Q_storage_2014 = data['Q_storage'].to_numpy()
+
 # Q_storage_2014 is used for validation of the PTES model for 2014.
-Q_storage_2014 = Q_storage_2014[30:]
-# the first 30 days are ignored because data quality is bad
+Q_storage_2014 = Q_storage_2014[30:] # the first 30 days are ignored because data quality is bad
 Q_storage_start_2014 = Q_storage_2014[0]
 Q_storage_end_2014 = Q_storage_2014[-1]
+
 # calculate the heat transfer coefficients of the PTES model based on the storage energy content for 2014.
 dronninglund_PTES.calculate_U_values_PTES(file_path, Q_storage_start_2014, Q_storage_end_2014, 0.56, 0.42, 0.02, 30, None)
 
@@ -257,6 +278,7 @@ plt.show()
 Result:
 
 <img src="figures/dronninglund_demo.png" alt="Dronninglund Demo" width="60%">
+
 - Black dashed: reported storage energy content
 - Red: simulated storage energy content
 - Blue dashed: Simple Storage Model (SSM)
