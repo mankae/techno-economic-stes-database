@@ -159,7 +159,6 @@ Defines a Tank Thermal Energy Storage (TTES) system
 
 ### General functions for heat loss simulation (can be used without defining a specific storage)
 - `.simulate_storage_simple(eta, Q_charge, Q_discharge, Q_storage_start)`: This function executes only a heat loss simulation using a SSM and no knowledge about the capacity or type of the storage
-- `.calculate_self_discharge_yearly(file_path, Q_storage_start_by_year, Q_storage_end_by_year)`: this function calculates a well fitting self-discharge rate for given yearly starting and ending values of the energy content of the storage
 
 ---
 
