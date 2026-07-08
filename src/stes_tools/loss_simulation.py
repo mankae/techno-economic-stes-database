@@ -232,27 +232,84 @@ def simulate_storage_simple(eta, Q_charge, Q_discharge, Q_storage_start):
 
     return Q_simple
 
-def calculate_self_discharge_yearly(file_path, Q_storage_start_by_year, Q_storage_end_by_year):
+# def calculate_self_discharge_yearly(file_path, Q_storage_start_by_year, Q_storage_end_by_year):
+#     """
+#     Fit a self-discharge rate (eta) for each calendar year independently,
+#     using only the fast simple model (no detailed heat-loss simulation).
+ 
+#     For each year, eta is chosen so that the simple model's energy
+#     content at the final timestep matches Q_storage_end_by_year[year].
+#     The relative squared error is minimized to make the result
+#     scale-invariant across years with different storage levels.
+ 
+#     Moved out of PTES: this only depends on data_import and
+#     simulate_storage_simple, and doesn't use any storage geometry
+#     (self.V_storage, self.get_temperature_layers, etc.), so it doesn't
+#     need to be a bound method on a PTES/STES instance.
+ 
+#     Parameters
+#     ----------
+#     file_path                : str   Path to the input data file.
+#     Q_storage_start_by_year  : dict  {year: Q_start [MWh]}
+#     Q_storage_end_by_year    : dict  {year: Q_end   [MWh]}
+ 
+#     Returns
+#     -------
+#     results : dict
+#         {
+#             year: {
+#                 "eta_self_discharge":    float,
+#                 "time":                  DatetimeIndex for that year,
+#                 "Q_storage_simple":      np.ndarray [MWh],
+#                 "optimization_success":  bool,
+#                 "optimization_message":  str,
+#             }
+#         }
+#     """
+#     data  = data_import(file_path)
+#     years = np.array(data.index.year)
+ 
+#     results = {}
+ 
+#     for year, Q_storage_start in Q_storage_start_by_year.items():
+ 
+#         if year not in Q_storage_end_by_year:
+#             continue  # skip years without a target end value
+ 
+#         Q_storage_end = Q_storage_end_by_year[year]
+ 
+#         # Slice all arrays to this calendar year
+#         idx = np.where(years == year)[0]
+#         if len(idx) == 0:
+#             continue
+ 
+#         time_year        = data.index[idx]
+#         Q_charge_year    = data['Q_charge'].to_numpy()[idx]
+#         Q_discharge_year = data['Q_discharge'].to_numpy()[idx]
+
+def calculate_self_discharge_yearly(time, Q_charge, Q_discharge, Q_storage_start_by_year, Q_storage_end_by_year):
     """
     Fit a self-discharge rate (eta) for each calendar year independently,
-    using only the fast simple model (no detailed heat-loss simulation).
- 
+    using only the simple storage model (no detailed heat-loss simulation).
+
     For each year, eta is chosen so that the simple model's energy
     content at the final timestep matches Q_storage_end_by_year[year].
     The relative squared error is minimized to make the result
     scale-invariant across years with different storage levels.
- 
-    Moved out of PTES: this only depends on data_import and
-    simulate_storage_simple, and doesn't use any storage geometry
-    (self.V_storage, self.get_temperature_layers, etc.), so it doesn't
-    need to be a bound method on a PTES/STES instance.
- 
+
+    Moved out of PTES: this only depends on simulate_storage_simple,
+    and doesn't use any storage geometry (self.V_storage,
+    self.get_temperature_layers, etc.), so it doesn't need to be a
+    bound method on a PTES/STES instance.
+
     Parameters
     ----------
-    file_path                : str   Path to the input data file.
+    time                     : DatetimeIndex  Full time axis, same length as Q_charge/Q_discharge.
+    Q_charge                 : array-like     Charging energy per timestep [MWh].
+    Q_discharge              : array-like     Discharging energy per timestep [MWh].
     Q_storage_start_by_year  : dict  {year: Q_start [MWh]}
     Q_storage_end_by_year    : dict  {year: Q_end   [MWh]}
- 
+
     Returns
     -------
     results : dict
@@ -266,26 +323,29 @@ def calculate_self_discharge_yearly(file_path, Q_storage_start_by_year, Q_storag
             }
         }
     """
-    data  = data_import(file_path)
-    years = np.array(data.index.year)
- 
+    Q_charge    = np.asarray(Q_charge)
+    Q_discharge = np.asarray(Q_discharge)
+    years       = np.array(time.year)
+
     results = {}
- 
+
     for year, Q_storage_start in Q_storage_start_by_year.items():
- 
+
         if year not in Q_storage_end_by_year:
             continue  # skip years without a target end value
- 
+
         Q_storage_end = Q_storage_end_by_year[year]
- 
+
         # Slice all arrays to this calendar year
         idx = np.where(years == year)[0]
         if len(idx) == 0:
             continue
- 
-        time_year        = data.index[idx]
-        Q_charge_year    = data['Q_charge'].to_numpy()[idx]
-        Q_discharge_year = data['Q_discharge'].to_numpy()[idx]
+
+        time_year        = time[idx]
+        Q_charge_year    = Q_charge[idx]
+        Q_discharge_year = Q_discharge[idx]
+
+        # ... rest unchanged (loss_function, minimize, results[year] = {...})
  
         # Minimize relative squared end-of-year error
         def loss_function(
