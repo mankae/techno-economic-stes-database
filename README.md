@@ -91,9 +91,7 @@ notebooks/Heat_Loss_Simulation_of_PTES.ipynb](notebooks/Heat_Loss_Simulation_of_
 
 ### Temperature map
 
-```
-temperature_map(n_layers, T_min, T_mid, T_max, n_points, stretch, sharpness, overlap, plot)
-```
+### `temperature_map(n_layers, T_min, T_mid, T_max, n_points, stretch, sharpness, overlap, plot)`
 
 Generates a stratified temperature distribution depending on the energy content of the storage used during the heat-loss simulation.
 
@@ -140,28 +138,28 @@ Defines a Tank Thermal Energy Storage (TTES) system
 
 ### Functions of storage classes
 
-- `.compute_energy_bounds()`
-- `.set_temperature_map(T_curves)`
-- `.get_temperature_layers(Q_storage)`
-- `.set_U_values(U_lid, U_side, U_bottom)`
+- `.compute_energy_bounds()`: calculates `Q_min` and `Q_max` for a storage with defined temperature range and volume
+- `.set_temperature_map(T_curves)`: links a temperature map to the storage. `T_curves` is a matrix containing vectors of temperature values for each layer at energy contents of the storage between `Q_min` and `Q_max`
+- `.get_temperature_layers(Q_storage)`: is used to get a vector of the temperatures of each layer as a function of the energy content `Q_storage`
+- `.set_U_values(U_lid, U_side, U_bottom)`: is used to set the U-values at the surfaces of the storage
 
 ### `PTES` specific functions
-- `.volume_truncated_pyramid(h, a, b, c, d)`
-- `.volume_per_layer_truncated_pyramid(h, a, b, c, d, n)`
-- `.surface_area_truncated_pyramid(h, a, b, c, d)`
-- `.surface_area_per_layer_truncated_pyramid(h, a, b, c, d, n)`
-- `.simulate_PTES(file_path, Q_storage_start, sim_start=None, sim_end=None)`
-- `.calculate_U_values_PTES(file_path,Q_storage_start,Q_storage_end,share_loss_lid=0.56,share_loss_side=0.41,share_loss_bottom=0.03,start_idx=None,end_idx=None)`
+- `.volume_truncated_pyramid(h, a, b, c, d)`: is used to calculate the volume for a typical PTES
+- `.volume_per_layer_truncated_pyramid(h, a, b, c, d, n)`: is used to calculate the volume of each layer for a typical PTES
+- `.surface_area_truncated_pyramid(h, a, b, c, d)`: is used to calculate the surface areas for a typical PTES
+- `.surface_area_per_layer_truncated_pyramid(h, a, b, c, d, n)`: is used to calculate the surface areas of each layer for a typical PTES
+- `.simulate_PTES(file_path, Q_storage_start, sim_start=None, sim_end=None)`: this is the function which is used for the heat loss simulation. Additionaly the best fitting self-discharge rate is calculated
+- `.calculate_U_values_PTES(file_path,Q_storage_start,Q_storage_end,share_loss_lid,share_loss_side,share_loss_bottom,start_idx=None,end_idx=None)`: this function calculates U-values based on reported data. Furthermore, the shares of heat lost through the lid, sides, and bottom must be known.
 
 ### `TTES` specific functions
-- `.volume_cylinder(h, r)`
-- `.volume_per_layer(h, r, n)`
-- `.surface_area_cylinder(h, r)`
-- `.surface_area_per_layer(h, r, n)`
+- `.volume_cylinder(h, r)`: is used to calculate the volume for a typical TTES
+- `.volume_per_layer(h, r, n)`: is used to calculate the volume of each layer for a typical TTES
+- `.surface_area_cylinder(h, r)`: is used to calculate the surface areas for a typical TTES
+- `.surface_area_per_layer(h, r, n)`: is used to calculate the surface areas of each layer for a typical TTES
 
 ### General functions for heat loss simulation (can be used without defining a specific storage)
-- `.simulate_storage_simple(eta, Q_charge, Q_discharge, Q_storage_start)`
-- `.calculate_self_discharge_yearly(file_path, Q_storage_start_by_year, Q_storage_end_by_year)`
+- `.simulate_storage_simple(eta, Q_charge, Q_discharge, Q_storage_start)`: This function executes only a heat loss simulation using a SSM and no knowledge about the capacity or type of the storage
+- `.calculate_self_discharge_yearly(file_path, Q_storage_start_by_year, Q_storage_end_by_year)`: this function calculates a well fitting self-discharge rate for given yearly starting and ending values of the energy content of the storage
 
 ---
 
@@ -372,10 +370,10 @@ techno-economic-stes-database/
 Additional examples are available in the notebooks.
 
 - **Cost function database**
-  - `notebooks/CAPEX_OPEX_database_STES.ipynb`
+  - [notebooks/CAPEX_OPEX_database_STES.ipynb](notebooks/CAPEX_OPEX_database_STES.ipynb)
 
 - **Heat-loss simulation**
-  - `notebooks/Heat_Loss_Simulation_of_PTES.ipynb`
+  - [notebooks/Heat_Loss_Simulation_of_PTES.ipynb](notebooks/Heat_Loss_Simulation_of_PTES.ipynb)
 
 ---
 
