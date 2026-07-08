@@ -33,7 +33,7 @@ The package includes a simulation framework for modelling heat losses in PTES an
 
 The simulation derives an effective **self-discharge rate** ($\eta_{\mathrm{self}}$), which can be directly used in the Simple Storage Model (SSM) frequently employed in optimization-based energy system models:
 
-$$Q_{\mathrm{sto,t+1}}=\eta_{\mathrm{self}}Q_{\mathrm{sto,t}}+\left(\eta_{\mathrm{ch}}\dot{Q}_{\mathrm{ch}}-\frac{\dot{Q}_{\mathrm{disch}}{\eta_{\mathrm{disch}}}\right)\Delta t$$
+$$Q_{\mathrm{sto,t+1}}=\eta_{\mathrm{self}} \cdot Q_{\mathrm{sto,t}}+\left(\eta_{\mathrm{ch}} \cdot \dot{Q}_{\mathrm{ch}} -\frac{\dot{Q}_{\mathrm{disch}}}{\eta_{\mathrm{disch}}}\right) \cdot \Delta t$$
 
 ---
 
