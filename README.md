@@ -282,6 +282,14 @@ Result:
 
 The Mean Absolute Percentage Error (MAPE) quantifies the deviation between simulated and reported storage energy content.
 
+```python
+print(f"Self-discharge rate: {dronninglund_PTES.eta_self_discharge * 100:.2f} % per day")
+```
+
+```text
+Self-discharge rate: 0.12 % per day
+```
+
 ---
 
 # Installation
