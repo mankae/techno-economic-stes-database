@@ -232,6 +232,91 @@ def simulate_storage_simple(eta, Q_charge, Q_discharge, Q_storage_start):
 
     return Q_simple
 
+def calculate_self_discharge_yearly(file_path, Q_storage_start_by_year, Q_storage_end_by_year):
+    """
+    Fit a self-discharge rate (eta) for each calendar year independently,
+    using only the fast simple model (no detailed heat-loss simulation).
+ 
+    For each year, eta is chosen so that the simple model's energy
+    content at the final timestep matches Q_storage_end_by_year[year].
+    The relative squared error is minimized to make the result
+    scale-invariant across years with different storage levels.
+ 
+    Moved out of PTES: this only depends on data_import and
+    simulate_storage_simple, and doesn't use any storage geometry
+    (self.V_storage, self.get_temperature_layers, etc.), so it doesn't
+    need to be a bound method on a PTES/STES instance.
+ 
+    Parameters
+    ----------
+    file_path                : str   Path to the input data file.
+    Q_storage_start_by_year  : dict  {year: Q_start [MWh]}
+    Q_storage_end_by_year    : dict  {year: Q_end   [MWh]}
+ 
+    Returns
+    -------
+    results : dict
+        {
+            year: {
+                "eta_self_discharge":    float,
+                "time":                  DatetimeIndex for that year,
+                "Q_storage_simple":      np.ndarray [MWh],
+                "optimization_success":  bool,
+                "optimization_message":  str,
+            }
+        }
+    """
+    data  = data_import(file_path)
+    years = np.array(data.index.year)
+ 
+    results = {}
+ 
+    for year, Q_storage_start in Q_storage_start_by_year.items():
+ 
+        if year not in Q_storage_end_by_year:
+            continue  # skip years without a target end value
+ 
+        Q_storage_end = Q_storage_end_by_year[year]
+ 
+        # Slice all arrays to this calendar year
+        idx = np.where(years == year)[0]
+        if len(idx) == 0:
+            continue
+ 
+        time_year        = data.index[idx]
+        Q_charge_year    = data['Q_charge'].to_numpy()[idx]
+        Q_discharge_year = data['Q_discharge'].to_numpy()[idx]
+ 
+        # Minimize relative squared end-of-year error
+        def loss_function(
+            eta,
+            Q_charge_year=Q_charge_year,
+            Q_discharge_year=Q_discharge_year,
+            Q_storage_start=Q_storage_start,
+            Q_storage_end=Q_storage_end,
+        ):
+            eta      = float(eta[0])
+            Q_simple = simulate_storage_simple(eta, Q_charge_year, Q_discharge_year, Q_storage_start)
+            rel_error = (Q_simple[-1] - Q_storage_end) / Q_storage_end
+            return rel_error**2
+ 
+        result  = minimize(loss_function, x0=[0.01], bounds=[(0, 1)])
+        eta_opt = float(result.x[0])
+ 
+        Q_storage_simple_year = simulate_storage_simple(
+            eta_opt, Q_charge_year, Q_discharge_year, Q_storage_start
+        )
+ 
+        results[year] = {
+            "eta_self_discharge":   eta_opt,
+            "time":                 time_year,
+            "Q_storage_simple":     Q_storage_simple_year,
+            "optimization_success": result.success,
+            "optimization_message": result.message,
+        }
+ 
+    return results
+
 
 # =====================================================================
 # PTES — PIT THERMAL ENERGY STORAGE (truncated-pyramid geometry)
@@ -525,11 +610,11 @@ class PTES(STES):
 
                 Q_storage_sim[i] = Q_storage_sim[i - 1] + Q_charge[i] - Q_discharge[i] - Q_loss[i]
 
-            return Q_storage_sim, Q_loss, Q_loss_lid_array, Q_loss_side_array, Q_loss_bottom_array
+            return Q_storage_sim, Q_loss_lid_array, Q_loss_side_array, Q_loss_bottom_array
 
         # --- Objective: penalize final-energy mismatch + loss-share mismatch ---
         def objective(U_values):
-            Q_storage_sim, Q_loss, Q_loss_lid, Q_loss_side, Q_loss_bottom = simulate_storage(U_values)
+            Q_storage_sim, Q_loss_lid, Q_loss_side, Q_loss_bottom = simulate_storage(U_values)
 
             # Term 1: squared deviation of final storage energy from measurement
             final_error = Q_storage_sim[-1] - Q_storage_end
@@ -551,7 +636,8 @@ class PTES(STES):
         result = minimize(objective, x0=k0, bounds=bounds, method='L-BFGS-B')
 
         self.U_lid, self.U_side, self.U_bottom = result.x
-        Q_storage_sim, Q_loss, _, _, _ = simulate_storage(result.x)
+        Q_storage_sim, Q_loss_lid, Q_loss_side, Q_loss_bottom = simulate_storage(result.x)
+        Q_loss = Q_loss_lid + Q_loss_side + Q_loss_bottom
 
         return {
             "U_lid":                   self.U_lid,
@@ -562,87 +648,6 @@ class PTES(STES):
             "optimization_success":    result.success,
             "optimization_message":    result.message,
         }
-
-    def calibrate_self_discharge_yearly(self, file_path, Q_storage_start_by_year, Q_storage_end_by_year):
-        """
-        Fit a self-discharge rate (eta) for each calendar year independently,
-        using only the fast simple model (no detailed heat-loss simulation).
-
-        For each year, eta is chosen so that the simple model's energy
-        content at the final timestep matches Q_storage_end_by_year[year].
-        The relative squared error is minimized to make the result
-        scale-invariant across years with different storage levels.
-
-        Parameters
-        ----------
-        file_path                : str   Path to the input data file.
-        Q_storage_start_by_year  : dict  {year: Q_start [MWh]}
-        Q_storage_end_by_year    : dict  {year: Q_end   [MWh]}
-
-        Returns
-        -------
-        results : dict
-            {
-                year: {
-                    "eta_self_discharge":    float,
-                    "time":                  DatetimeIndex for that year,
-                    "Q_storage_simple":      np.ndarray [MWh],
-                    "optimization_success":  bool,
-                    "optimization_message":  str,
-                }
-            }
-        """
-        data  = data_import(file_path)
-        years = np.array(data.index.year)
-
-        results = {}
-
-        for year, Q_storage_start in Q_storage_start_by_year.items():
-
-            if year not in Q_storage_end_by_year:
-                continue  # skip years without a target end value
-
-            Q_storage_end = Q_storage_end_by_year[year]
-
-            # Slice all arrays to this calendar year
-            idx             = np.where(years == year)[0]
-            if len(idx) == 0:
-                continue
-
-            time_year        = data.index[idx]
-            Q_charge_year    = data['Q_charge'].to_numpy()[idx]
-            Q_discharge_year = data['Q_discharge'].to_numpy()[idx]
-
-            # Minimize relative squared end-of-year error
-            def loss_function(
-                eta,
-                Q_charge_year=Q_charge_year,
-                Q_discharge_year=Q_discharge_year,
-                Q_storage_start=Q_storage_start,
-                Q_storage_end=Q_storage_end,
-            ):
-                eta      = float(eta[0])
-                Q_simple = simulate_storage_simple(eta, Q_charge_year, Q_discharge_year, Q_storage_start)
-                rel_error = (Q_simple[-1] - Q_storage_end) / Q_storage_end
-                return rel_error**2
-
-            result   = minimize(loss_function, x0=[0.01], bounds=[(0, 1)])
-            eta_opt  = float(result.x[0])
-
-            Q_storage_simple_year = simulate_storage_simple(
-                eta_opt, Q_charge_year, Q_discharge_year, Q_storage_start
-            )
-
-            results[year] = {
-                "eta_self_discharge":   eta_opt,
-                "time":                 time_year,
-                "Q_storage_simple":     Q_storage_simple_year,
-                "optimization_success": result.success,
-                "optimization_message": result.message,
-            }
-
-        return results
-
 
 # =====================================================================
 # TTES — TANK THERMAL ENERGY STORAGE (cylindrical geometry)
