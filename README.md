@@ -60,15 +60,10 @@ Returns the specific heat capacity of water (J/(kg·K)) at temperature `T` (°C)
 Returns the **specific CAPEX** of the selected STES technology as a function of
 
 - technology type
-- storage capacity
-- temperature range
+- storage capacity and its unit
+- (temperature range)
 
-Supported technologies:
-
-- PTES
-- TTES
-- BTES
-- ATES
+The temperature range is an optional input. If it is not known, predefined energy density values are used. Supported technologies: (PTES, TTES, BTES, ATES)
 
 ---
 
@@ -87,8 +82,6 @@ Imports the operational data required for the heat-loss simulation from an Excel
 The required Excel format is described in [
 notebooks/Heat_Loss_Simulation_of_PTES.ipynb](notebooks/Heat_Loss_Simulation_of_PTES.ipynb)
 
----
-
 ### Temperature map
 
 ### `temperature_map(n_layers, T_min, T_mid, T_max, n_points, stretch, sharpness, overlap, plot)`
@@ -97,8 +90,6 @@ Generates a stratified temperature distribution depending on the energy content 
 
 The parameters controlling the temperature profile are explained in [
 notebooks/Heat_Loss_Simulation_of_PTES.ipynb](notebooks/Heat_Loss_Simulation_of_PTES.ipynb)
-
----
 
 ### Storage classes
 
@@ -119,8 +110,6 @@ Defines a Pit Thermal Energy Storage (PTES) system by specifying
 - operating temperature range
 - reference temperature
 
----
-
 ### `TTES`
 
 ```python
@@ -133,8 +122,6 @@ Defines a Tank Thermal Energy Storage (TTES) system
 - number of temperature layers
 - operating temperature range
 - reference temperature
-
----
 
 ### Functions of storage classes
 
@@ -149,7 +136,7 @@ Defines a Tank Thermal Energy Storage (TTES) system
 - `.surface_area_truncated_pyramid(h, a, b, c, d)`: is used to calculate the surface areas for a typical PTES
 - `.surface_area_per_layer_truncated_pyramid(h, a, b, c, d, n)`: is used to calculate the surface areas of each layer for a typical PTES
 - `.simulate_PTES(file_path, Q_storage_start, sim_start=None, sim_end=None)`: this is the function which is used for the heat loss simulation. Additionaly the best fitting self-discharge rate is calculated
-- `.calculate_U_values_PTES(file_path,Q_storage_start,Q_storage_end,share_loss_lid,share_loss_side,share_loss_bottom,start_idx=None,end_idx=None)`: this function calculates U-values based on reported data. Furthermore, the shares of heat lost through the lid, sides, and bottom must be known.
+- `.calculate_U_values_PTES(file_path,Q_storage_start,Q_storage_end,share_loss_lid,share_loss_side,share_loss_bottom,start_idx=None,end_idx=None)`: this function calculates U-values based on reported data. It can be used to calibrate a storage. For that, the shares of heat lost through the lid, sides, and bottom must be known.
 
 ### `TTES` specific functions
 - `.volume_cylinder(h, r)`: is used to calculate the volume for a typical TTES
@@ -157,8 +144,8 @@ Defines a Tank Thermal Energy Storage (TTES) system
 - `.surface_area_cylinder(h, r)`: is used to calculate the surface areas for a typical TTES
 - `.surface_area_per_layer(h, r, n)`: is used to calculate the surface areas of each layer for a typical TTES
 
-### General functions for heat loss simulation (can be used without defining a specific storage)
-- `.simulate_storage_simple(eta, Q_charge, Q_discharge, Q_storage_start)`: This function executes only a heat loss simulation using a SSM and no knowledge about the capacity or type of the storage
+### General functions for heat loss simulation (not a function of the class)
+- `simulate_storage_simple(eta, Q_charge, Q_discharge, Q_storage_start)`: This function executes only a heat loss simulation using a SSM and no knowledge about the capacity or type of the storage
 
 ---
 
