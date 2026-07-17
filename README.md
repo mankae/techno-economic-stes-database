@@ -25,7 +25,7 @@ The repository contains CAPEX and OPEX data for the following Seasonal Thermal E
 - BTES – Borehole Thermal Energy Storage
 - ATES – Aquifer Thermal Energy Storage
 
-The package provides functions to estimate investment and operating costs based on the selected technology and storage capacity.
+The package provides functions to estimate investment and operating costs based on the selected technology and storage capacity. The database can be found [here](notebooks/STES_CAPEX_OPEX_database.xlsx).
 
 ## Heat-loss simulation
 
@@ -82,14 +82,16 @@ Imports the operational data required for the heat-loss simulation from an Excel
 The required Excel format is described in [
 notebooks/Heat_Loss_Simulation_of_PTES.ipynb](notebooks/Heat_Loss_Simulation_of_PTES.ipynb)
 
-### Temperature map
-
 ### `temperature_map(n_layers, T_min, T_mid, T_max, n_points, stretch, sharpness, overlap, plot)`
 
 Generates a stratified temperature distribution depending on the energy content of the storage used during the heat-loss simulation.
 
 The parameters controlling the temperature profile are explained in [
 notebooks/Heat_Loss_Simulation_of_PTES.ipynb](notebooks/Heat_Loss_Simulation_of_PTES.ipynb)
+
+### `simulate_storage_simple(eta, Q_charge, Q_discharge, Q_storage_start)`
+
+This function executes a heat loss simulation using a SSM and no knowledge about the capacity or type of the storage.
 
 ### Storage classes
 
@@ -143,9 +145,6 @@ Defines a Tank Thermal Energy Storage (TTES) system
 - `.volume_per_layer(h, r, n)`: is used to calculate the volume of each layer for a typical TTES
 - `.surface_area_cylinder(h, r)`: is used to calculate the surface areas for a typical TTES
 - `.surface_area_per_layer(h, r, n)`: is used to calculate the surface areas of each layer for a typical TTES
-
-### General functions for heat loss simulation (not a function of the class)
-- `simulate_storage_simple(eta, Q_charge, Q_discharge, Q_storage_start)`: This function executes only a heat loss simulation using a SSM and no knowledge about the capacity or type of the storage
 
 ---
 
@@ -377,8 +376,8 @@ The techno-economic data are compiled from published literature. References are 
 
 The validation examples use operational data from the following open repositories:
 
-- Høje Taastrup
-- Dronninglund
+- [Høje Taastrup](https://github.com/PitStorages/HojeTaastrupData)
+- [Dronninglund](https://github.com/PitStorages/DronninglundData)
 
 ---
 
