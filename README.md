@@ -65,8 +65,6 @@ Returns the **specific CAPEX** of the selected STES technology as a function of
 
 The temperature range is an optional input. If it is not known, predefined energy density values are used. Supported technologies: (PTES, TTES, BTES, ATES)
 
----
-
 ### `OPEX_STES(technology)`
 
 Returns the annual OPEX factor for the selected STES technology.
