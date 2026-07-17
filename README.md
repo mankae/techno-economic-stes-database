@@ -284,6 +284,9 @@ You can install the published version of the package from this [link](https://py
 
 ```bash
 git clone https://github.com/mankae/techno-economic-stes-database.git
+```
+
+```bash
 cd techno-economic-stes-database
 ```
 
