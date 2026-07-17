@@ -278,6 +278,8 @@ Self-discharge rate: 0.12 % per day
 
 # Installation
 
+You can install the published version of the package from this [https://pypi.org/project/stes-tools/](link) with `pip install stes-tools` or you can install the package in editable mode and clone the git repository.
+
 ## Clone the repository
 
 ```bash
